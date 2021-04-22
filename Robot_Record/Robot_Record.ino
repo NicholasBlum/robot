@@ -89,6 +89,9 @@ double joy_jaws,joy_base,joy_arm,joy_forearm;
 
 double jaws_speed, base_speed, arm_speed, forearm_speed;
 
+double jawsprev, baseprev, armprev, forearmprev;
+  //Initialize the values of the previous loop iteration's speed for jaws, base, arm, and forearm servos, used in motionpoint
+
 bool isRecording = false; 
   //Initialize boolean value for movement recording
 
@@ -97,6 +100,9 @@ bool isPlaying = false;
 
 bool increase = true;
   //Initialize boolean value for boomerang feature
+
+bool checkpoint;
+  //Initialize boolean determining the beginnings & ends of new servo motions
 
 void loop() {
  
@@ -245,10 +251,15 @@ void loop() {
   arm.write(arm_out);
   forearm.write(forearm_out);
     // Output servo angles 
+    
+  checkpoint = ((base_speed=/=0) && (baseprev==0)) || ((base_speed==0) && (baseprev=/=0)) ...
+                || ((jaws_speed=/=0) && (jawsprev==0)) || ((jaws_speed==0) && (jawsprev=/=0)) ...
+                || ((forearm_speed=/=0) && (forearmprev==0)) || ((forearm_speed==0) && (forearmprev=/=0)) ...
+                || ((arm_speed=/=0) && (armprev==0)) || ((arm_speed==0) && (armprev=/=0));
  
   if (isRecording && t<arrLength) {
-    /* If recording has started and there is memory left, postion 
-     * data will be stored
+    /* If recording has started, there is memory left, and a servo has started or stopped moving, 
+     * position data will be stored
      */
     jawsr[t] = jaws_out;
     baser[t] = base_out;
@@ -266,6 +277,11 @@ void loop() {
     t = 0;
   }
   
+  baseprev=base_speed;
+  armprev=arm_speed;
+  forearmprev=forearm_speed;
+  jawsprev=jaws_speed;
+ 
   delay(10);
   // wait 10 ms
 }
